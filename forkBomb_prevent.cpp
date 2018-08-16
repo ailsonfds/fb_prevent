@@ -1,4 +1,7 @@
 #include <iostream>
+#include <string> 
+#include <cstring>
+#include <sstream>
 
 // Função que executa um comando no terminal e retorna o que seria printado
 // como string
@@ -22,37 +25,39 @@ std::string exec(char *cmd)
 
 void safeForkBomb()
 {
-    string lista, ppid, comando;
+    std::string lista, ppid, comando;
 
     int limit, quantidade;
 
     std::cout << "Defina a quantidade máxima de processos: ";
     std::cin >> limit;
 
-    while (1) 
+    while(1) 
     {
         lista = exec("ps -e -o ppid | sort | uniq -c");
 
-        istringstream leitor(lista);
+        std::istringstream leitor(lista);
 
-        while (leitor >> quantidade) {
+        while (leitor >> quantidade) 
+        {
             leitor >> ppid;
-            if (quantidade > limit) {
+            if (quantidade > limit) 
+            {
 		
-		system("echo Os seguintes processos estão tentando executar Fork Bomb:" +  ppid.c_srt());
+		        std::string texto;
+                
+                texto = "echo Os seguintes processos estão tentando executar Fork Bomb:" +  ppid;
+                system(texto.c_str());
 
-		system("echo Salvando exceções geradas pelo processo malicioso...:; ps + " + ppid.c_srt() + " 2> erros.txt" );
-		
-		system("echo Mata processo malicioso: ")
-		
-                comando = "kill -9 " + ppid;
-
-                cout << comando << endl;
+        		texto = "echo Salvando exceções geradas pelo processo malicioso...:; ps + " + ppid + " 2> erros.txt";
+	            system(texto.c_str());	
+    		       
+                std::cout << comando << std::endl;
 
                 system(comando.c_str());
 
                 return;
-	    }
+    	    }
         }
    }
 }
