@@ -41,7 +41,7 @@ void safeForkBomb()
         while (leitor >> quantidade) 
         {
             leitor >> ppid;
-            if (quantidade > limit) 
+            if (quantidade >= limit) 
             {
 		
 		        std::string texto;
@@ -50,11 +50,13 @@ void safeForkBomb()
                 system(texto.c_str());
 
         		texto = "echo Salvando exceções geradas pelo processo malicioso...:; ps + " + ppid + " 2> erros.txt";
-	            system(texto.c_str());	
-    		       
-                std::cout << comando << std::endl;
+	            system(texto.c_str());	                
 
-                system(comando.c_str());
+                //comando = "ulimit -u " + limit;
+   
+                //std::cout << comando << std::endl;
+
+                //system(comando.c_str());
 
                 return;
     	    }
