@@ -54,3 +54,21 @@ void safe_fork_bomb()
         }
     }
 }
+
+void print_process_num_by_users(){
+    std::cout.width(8);
+    std::cout << "UID";
+    std::cout.width(25);
+    std::cout << "UIDNAME";
+    std::cout.width(8);
+    std::cout << "PQTD" << std::endl;
+    for(auto i : (new ProcTree())->process_num_users()){
+        std::string str = execmd((char*)std::string("getent passwd " + std::to_string(i.first) + " | cut -d: -f1").c_str());
+        std::cout.width(8);
+        std::cout << i.first;
+        std::cout.width(25);
+        std::cout << str.replace(str.find("\n"),1,"");
+        std::cout.width(8);
+        std::cout << i.second << std::endl;
+    }
+}
