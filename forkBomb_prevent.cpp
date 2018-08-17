@@ -1,4 +1,4 @@
-#include <iostream>
+nclude <iostream>
 #include <string> 
 #include <cstring>
 #include <sstream>
@@ -32,6 +32,12 @@ void safeForkBomb()
     std::cout << "Defina a quantidade máxima de processos: ";
     std::cin >> limit;
 
+    comando = "ulimit -u " + limit;
+   
+    std::cout << comando << std::endl;
+
+    system(comando.c_str());
+
     while(1) 
     {
         lista = exec("ps -e -o ppid | sort | uniq -c");
@@ -42,28 +48,20 @@ void safeForkBomb()
         {
             leitor >> ppid;
             if (quantidade >= limit) 
-            {
-		
+			{		
 		        std::string texto;
                 
                 texto = "echo Os seguintes processos estão tentando executar Fork Bomb:" +  ppid;
                 system(texto.c_str());
 
-        		texto = "echo Salvando exceções geradas pelo processo malicioso...:; ps + " + ppid + " 2> erros.txt";
-	            system(texto.c_str());	                
-
-                //comando = "ulimit -u " + limit;
-   
-                //std::cout << comando << std::endl;
-
-                //system(comando.c_str());
+		    	texto = "echo Salvando exceções geradas pelo processo malicioso...:; ps + " + ppid + " 2> erros.txt";
+			    system(texto.c_str());	                
 
                 return;
     	    }
         }
    }
 }
-
 
 int main()
 {
