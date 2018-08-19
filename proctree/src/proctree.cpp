@@ -10,51 +10,6 @@ Node::Node(pid_t pid, pid_t ppid, uid_t uid, std::string command, size_t level){
 	this->childs = new std::map<pid_t,Node*>();
 }
 
-Node::Node(pid_t pid){
-	pid_t ppid;
-	uid_t uid;
-	std::string command;
-	this->childs = new std::map<pid_t,Node*>();
-
-	
-	std::string line;
-	std::string cmd("ps --ppid " + std::to_string(pid) + " -o ppid,pid,uid,comm");
-	std::istringstream reader(execmd((char*) cmd.c_str()));
-	int count = 0;
-	// Trow away header
-	while(reader >> line && count++ < 2);
-	
-	while(reader.good()){
-		reader >> ppid;
-		reader >> pid;
-		reader >> uid;
-		reader >> command;
-		Node *node = new Node(pid);
-		this->brew(*node);
-		std::cout<<"tadificil..."<<std::endl;
-	}
-
-	cmd = "ps --pid " + std::to_string(pid) + " -o ppid,pid,uid,comm";
-	std::stringstream reader2(execmd((char*) cmd.c_str()));
-	count = 0;
-	// Trow away header again
-	while(reader2 >> line && count++ < 3);
-
-	while(reader.good()){
-		reader >> ppid;
-		reader >> pid;
-		reader >> uid;
-		reader >> command;
-	}
-
-	this->pid = pid;
-	this->ppid = ppid;
-	this->uid = uid;
-	this->command = command;
-	this->level = level;
-	this->father = nullptr;
-}
-
 std::ostream& Node::print_json(std::ostream& out){
 	if (father == nullptr || father->get_childs().begin()->second->get_pid() == this->get_pid()){
 		out << "{";
@@ -125,27 +80,65 @@ ProcTree::ProcTree(){
 		reader >> pid;
 		reader >> uid;
 		reader >> command;
-		Node *current = new Node(pid,ppid,uid,command);
-		if(parents.find(ppid) == parents.end()){
-			std::map<pid_t,Node*> second = std::map<pid_t,Node*>();
-			parents[ppid] = second;
+		if (!command.empty()){
+			Node *current = new Node(pid,ppid,uid,command);
+			if(parents.find(ppid) == parents.end()){
+				std::map<pid_t,Node*> second = std::map<pid_t,Node*>();
+				parents[ppid] = second;
+			}
+			parents[ppid][pid] = current;
+			procs[pid] = current;
+			users[pid] = uid;
+			commands[pid] = command;
+			current->set_father(procs[current->get_ppid()]);
+			if(procs[current->get_ppid()] != nullptr) procs[current->get_ppid()]->brew(*current);
 		}
-		parents[ppid][pid] = current;
-		procs[pid] = current;
-		users[pid] = uid;
-		commands[pid] = command;
-		current->set_father(procs[current->get_ppid()]);
-		if(procs[current->get_ppid()] != nullptr) procs[current->get_ppid()]->brew(*current);
 	}
 }
 
 ProcTree::ProcTree(Node& root){
 	this->root = &root;
-	
-	procs[this->root->get_pid()] = this->root;
-	parents[this->root->get_ppid()][this->root->get_pid()] = this->root;
-	users[this->root->get_pid()] = this->root->get_uid();
-	commands[this->root->get_pid()] = this->root->get_command();
+	this->root->set_childs(root.get_childs());
+	// parents = std::map<pid_t,std::map<pid_t,Node*> >();
+	// procs = std::map<pid_t,Node* >();
+	// users = std::map<pid_t,uid_t>();
+	// commands = std::map<pid_t,std::string>();
+	// std::string command;
+	// size_t pid, ppid;
+	// size_t uid;
+
+	// std::string cmd("ps --ppid " + std::to_string(root.get_pid()) + " -o ppid,pid,uid,comm 2> log/error.log");
+	// std::istringstream reader(execmd((char*) cmd.c_str()));
+
+	// // Add root to maps 
+	// procs[root.get_pid()] = &root;
+	// parents[root.get_ppid()][root.get_pid()] = &root;
+	// users[root.get_pid()] = root.get_uid();
+	// commands[root.get_pid()] = root.get_command();
+
+	// // Throw away first line (PPID PID UID COMMAND)
+	// int count = 0;
+	// while(reader >> command && count++ < 3);
+	// while(reader.good()){
+	// 	reader >> ppid;
+	// 	reader >> pid;
+	// 	reader >> uid;
+	// 	reader >> command;
+	// 	if(!command.empty()){
+	// 		Node *current = new Node(pid,ppid,uid,command);
+	// 		ProcTree pt = ProcTree(*current);
+	// 		if(parents.find(ppid) == parents.end()){
+	// 			std::map<pid_t,Node*> *second = new std::map<pid_t,Node*>();
+	// 			parents[ppid] = *second;
+	// 		}
+	// 		parents[ppid][pid] = current;
+	// 		procs[pid] = current;
+	// 		users[pid] = uid;
+	// 		commands[pid] = command;
+	// 		current->set_father(procs[current->get_ppid()]);
+	// 		if(procs[current->get_ppid()] != nullptr) procs[current->get_ppid()]->brew(*current);
+	// 	}
+	// }
 }
 
 std::map<uid_t,size_t> ProcTree::process_num_users(){
