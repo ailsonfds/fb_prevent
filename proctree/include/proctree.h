@@ -9,10 +9,7 @@
 #include <set>
 #include "shellutils.h"
 
-#ifndef PRINT_FORMATATION
-#define PRINT_FORMATATION 2 // 1 - json, 2 - xml
-	// std::string my_print_formatation = "xml";
-#endif /* __PRINT_FORMATATION__ */
+static int PRINT_FORMATATION = 2;
 
 class Node{
 private:
@@ -25,8 +22,7 @@ private:
     std::map<pid_t,Node*> *childs; ///> key=pid, value=child pointer
 
 public:
-	Node(pid_t pid);
-	Node(pid_t pid, pid_t ppid, uid_t uid, std::string command, size_t level = 0);
+	Node(pid_t pid, pid_t ppid = 0, uid_t uid = 0, std::string command = "__not_found__", size_t level = 0);
 
     pid_t get_pid(){ return pid; }
     pid_t get_ppid(){ return ppid; }
@@ -34,7 +30,7 @@ public:
     uid_t get_uid(){ return uid; }
     std::string get_command(){ return command; }
     Node& get_father(){return *father; }
-    std::map<pid_t,Node*> get_childs(){ return *childs; }
+    std::map<pid_t,Node*>& get_childs(){ return *childs; }
 
     void brew(Node& child){
     	childs->insert(std::pair<pid_t,Node*>(child.get_pid(),&child));
@@ -42,6 +38,7 @@ public:
 
     void set_father(Node *father){ this->father = father; }
     void set_level(size_t level){ this->level = level; }
+    void set_childs(std::map<pid_t,Node*>& childs){ this->childs = &childs; }
 	Node& find(pid_t pid, Node* current = new Node(0,0,0,"__not_found__"));
 
     std::ostream& print_json(std::ostream& out);

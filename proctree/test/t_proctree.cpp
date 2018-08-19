@@ -9,7 +9,7 @@ int main(int argc, char* argv[]){
 	ProcTree *proctree = new ProcTree();
 
 	std::fstream file;
-	file.open("arvores.xml",std::fstream::in | std::fstream::app);
+	file.open("test/arvore.xml",std::fstream::out);
 
 	std::cout << "===================================================================" << std::endl;
 
@@ -80,7 +80,11 @@ int main(int argc, char* argv[]){
 	std::cout << "===================================================================" << std::endl;
 
 	ProcTree *proctree2 = new ProcTree(proctree->find(ppid));
-	
+
+	std::fstream subarvore("test/subarvore.xml", std::fstream::out);
+
+	if(subarvore.is_open()) subarvore << *proctree2 << std::endl;
+
 	std::cout << *proctree2 << std::endl;
 
 	std::cout << "===================================================================" << std::endl;
