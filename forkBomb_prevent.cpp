@@ -1,4 +1,4 @@
-nclude <iostream>
+#include <iostream>
 #include <string> 
 #include <cstring>
 #include <sstream>
@@ -25,9 +25,9 @@ std::string exec(char *cmd)
 
 void safeForkBomb()
 {
-    std::string lista, ppid, comando;
+    std::string lista, comando;
 
-    int limit, quantidade;
+    int limit, quantidade, ppid;
 
     std::cout << "Defina a quantidade máxima de processos: ";
     std::cin >> limit;
@@ -40,7 +40,9 @@ void safeForkBomb()
 
     while(1) 
     {
-        lista = exec("ps -e -o ppid | sort | uniq -c");
+        comando = "ps -e -o ppid | sort | uniq -c";
+
+        lista = exec(comando.c_str());
 
         std::istringstream leitor(lista);
 
@@ -49,13 +51,14 @@ void safeForkBomb()
             leitor >> ppid;
             if (quantidade >= limit) 
 			{		
-		        std::string texto;
-                
-                texto = "echo Os seguintes processos estão tentando executar Fork Bomb:" +  ppid;
-                system(texto.c_str());
+		        // std::string texto;
+                // texto.clear();
+                // texto = std::string("echo \"Os seguintes processos podem estar tentando executar Fork Bomb:") +  ppid + std::string("\"");
+                std::cout << ppid << std::endl;
+                // system(texto.c_str());
 
-		    	texto = "echo Salvando exceções geradas pelo processo malicioso...:; ps + " + ppid + " 2> erros.txt";
-			    system(texto.c_str());	                
+		    	// texto = "echo Salvando exceções geradas pelo processo malicioso...:; ps " + ppid + " 2> erros.txt";
+			    // system(texto.c_str());
 
                 return;
     	    }
