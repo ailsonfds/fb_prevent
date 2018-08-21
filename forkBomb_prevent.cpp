@@ -2,6 +2,7 @@
 #include <string> 
 #include <cstring>
 #include <sstream>
+#include <algorithm>
 
 // Função que executa um comando no terminal e retorna o que seria printado
 // como string
@@ -25,46 +26,58 @@ std::string exec(char *cmd)
 
 void safeForkBomb()
 {
-    std::string lista, comando;
+
+    std::string lista, ppid, comando, user, usuarioPadrao;
 
     int limit, quantidade, ppid;
 
-    std::cout << "Defina a quantidade máxima de processos: ";
-    std::cin >> limit;
+    std::cout << "Defina a quantidade máxima de processos filhos permitidos: ";
+    std::cin >> limit;    
 
-    comando = "ulimit -u " + limit;
-   
-    std::cout << comando << std::endl;
-
-    system(comando.c_str());
+	usuarioPadrao = exec("whoami | grep -Ev '^$'");
 
     while(1) 
     {
-        comando = "ps -e -o ppid | sort | uniq -c";
 
-        lista = exec(comando.c_str());
+        lista = exec("ps -e -o ppid,user| sort | uniq -c");
 
         std::istringstream leitor(lista);
 
         while (leitor >> quantidade) 
-        {
+        {			
             leitor >> ppid;
-            if (quantidade >= limit) 
-			{		
-		        // std::string texto;
-                // texto.clear();
-                // texto = std::string("echo \"Os seguintes processos podem estar tentando executar Fork Bomb:") +  ppid + std::string("\"");
-                std::cout << ppid << std::endl;
-                // system(texto.c_str());
+			leitor >> user;
+			
+			user = user + "\n";
 
-		    	// texto = "echo Salvando exceções geradas pelo processo malicioso...:; ps " + ppid + " 2> erros.txt";
-			    // system(texto.c_str());
+			//Verifica se o usuário comum está tentando executar o fork_bomb
+			//Supõe-se que usuários com permissão de adm não vão tentar rodar um fork_bomb na máquina
+			if(user.compare(std::string(usuarioPadrao)) == 0) 
+			{			
+		        if (quantidade > limit) 
+		        {			       
+		            comando = "echo O seguintes processos está tentando executar Fork Bomb:" +  ppid;
+		            system(comando.c_str());               
+					
+					comando = "ps " + ppid; 
+					system(comando.c_str());
 
-                return;
-    	    }
-        }
-   }
+					std::cout << std::endl;					
+
+				    comando = "echo Matando o processo malicioso..." +  ppid;
+					system(comando.c_str());
+					
+					comando = "kill -9 " + ppid;
+					system(comando.c_str());
+
+					std::cout << std::endl;
+			    }
+       		}
+		}
+		system("sleep 10");
+   	}
 }
+
 
 int main()
 {
@@ -72,3 +85,4 @@ int main()
 	safeForkBomb();
 
 }
+
