@@ -1,4 +1,4 @@
-# fb_analiser
+# forkBomb_prevent.cpp
 Project to create an application for fork bomb prevention
 
 # proctree
